@@ -4,7 +4,7 @@ import 'package:money_transfert/models/transaction.dart';
 import 'package:money_transfert/models/user.dart';
 
 //Global variables
-User me;
+User user;
 Recipient globalRecipient;
 String amountSend;
 String tansfertFee;

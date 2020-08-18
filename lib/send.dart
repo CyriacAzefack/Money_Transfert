@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:money_transfert/home.dart';
+import 'package:money_transfert/Home.dart';
 import 'package:money_transfert/services/database.dart';
 import 'package:money_transfert/services/methods.dart';
 import 'package:money_transfert/view/my_widgets/constants.dart';
@@ -47,9 +47,9 @@ class _Send extends State<Send>{
                   this._currentStep=this._currentStep+1;
                 }
                 else{
-                  DatabaseService().addTransaction(me.uid, globalRecipient.documentId, amountSend, receivedAmount, tansfertFee, totalAmount,"Enregistrer");
+                  DatabaseService().addTransaction(user.uid, globalRecipient.documentId, amountSend, receivedAmount, tansfertFee, totalAmount,"Enregistrer");
                   Navigator.push(context, new MaterialPageRoute(builder: (BuildContext context){
-                    return new Home(me.uid);
+                    return new Home(user.uid);
                   }));
                 }
               });

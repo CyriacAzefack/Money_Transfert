@@ -1,12 +1,10 @@
 import 'dart:async';
-import 'dart:collection';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:country_pickers/utils/utils.dart';
 import 'package:empty_widget/empty_widget.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:money_transfert/models/transaction.dart';
+import 'package:money_transfert/models/recipient.dart';
 import 'package:money_transfert/recipentSend.dart';
 import 'package:money_transfert/services/database.dart';
 import 'package:money_transfert/services/methods.dart';
@@ -14,33 +12,33 @@ import 'package:money_transfert/view/my_widgets/constants.dart';
 import 'package:money_transfert/view/my_widgets/loading_scafold.dart';
 import 'package:money_transfert/view/my_widgets/myText.dart';
 import 'package:money_transfert/view/my_widgets/my_gradiant.dart';
+import 'package:money_transfert/view/my_widgets/padding_with_child.dart';
 
-import 'empty_screen.dart';
-import 'models/recipient.dart';
+import 'CreateRecipient.dart';
+import 'EmptyScreen.dart';
 
-class RecentRecipient extends StatefulWidget{
-  _RecentRecipient createState()=>new _RecentRecipient();
+class Recipients extends StatefulWidget{
+  @override
+  _Recipients createState()=> new _Recipients();
 }
 
-class _RecentRecipient extends State<RecentRecipient>{
+class _Recipients extends State<Recipients>{
 
   GlobalKey<FormState> ckey=new GlobalKey<FormState>();
   final GlobalKey<ScaffoldState> scaffoldKey=new GlobalKey<ScaffoldState>();
   String textSnack;
   StreamSubscription sub;
-  List<Recipient> recipientList=[];
+  List<Recipient> _recipientsList=[];
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     // ignore: unnecessary_statements
-    (me!=null) ? setupSub() : null;
+    (this.mounted) ? setupSub()  : null;
   }
 
   @override
   void dispose() {
-    // TODO: implement dispose
     sub.cancel();
     super.dispose();
   }
@@ -48,11 +46,28 @@ class _RecentRecipient extends State<RecentRecipient>{
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
-    return Scaffold(
-        backgroundColor: Colors.white.withOpacity(0.9),
+    return new Scaffold(
         key: scaffoldKey,
+        appBar: AppBar(
+          title: MyText("Mes bénéficiaires", color: white,),
+          actions: <Widget>[
+            SizedBox(width: 30.0,),
+            PaddingWith(
+              widget: InkWell(
+                child:  Icon(Icons.person_add, color: white, size: 28.0, ),
+                onTap: ((){
+                  Navigator.push(context, MaterialPageRoute(builder: (BuildContext context){
+                    return new CreateRecipient();
+                  }));
+                }),
+              ),
+              top: 0.0,
+              right: 7.0,
+            )
+          ],
+        ),
         body: StreamBuilder<QuerySnapshot>(
-          stream: DatabaseService().userCollection.document(me.uid).collection("transactions").snapshots(),
+          stream: DatabaseService().recipientFrom(user.uid),
           builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot){
             switch(snapshot.connectionState){
               case ConnectionState.waiting:
@@ -65,9 +80,9 @@ class _RecentRecipient extends State<RecentRecipient>{
                         width: MediaQuery.of(context).size.width,
                         height: MediaQuery.of(context).size.height,
                         child: ListView.builder(
-                            itemCount: recipientList.length,
+                            itemCount: _recipientsList.length,
                             itemBuilder: ((context, i){
-                              Recipient recipient=recipientList[i];
+                              Recipient recipient=_recipientsList[i];
                               return Card(
                                 elevation: 5.0,
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3.0)),
@@ -87,17 +102,20 @@ class _RecentRecipient extends State<RecentRecipient>{
                                           radius: 20.0,
                                           child: ClipOval(
                                             child: SizedBox(
-                                                width: 40.0,
-                                                height: 40.0,
-                                                child: FittedBox(
-                                                  fit: BoxFit.fill,
-                                                  alignment: Alignment.center,
-                                                  child: CountryPickerUtils.getDefaultFlagImage(CountryPickerUtils.getCountryByName(recipient.country)),
-                                                )
+                                              width: 40.0,
+                                              height: 40.0,
+                                              child: FittedBox(
+                                                fit: BoxFit.fill,
+                                                alignment: Alignment.center,
+                                                child: CountryPickerUtils.getDefaultFlagImage(CountryPickerUtils.getCountryByName(recipient.country)),
+                                              )
                                             ),
                                           ),
                                         ),
                                         title: MyText("${Methodes().capitalization(recipient.name)} ${Methodes().capitalization(recipient.surname)}", weight: FontWeight.w500, alignment: TextAlign.left,),
+                                        trailing: new IconButton(
+                                            icon: new Icon(Icons.more_vert, color: black,),
+                                            onPressed: (()=>print("Boutton plus"))),
                                         subtitle:  MyText("${recipient.numTel}", weight: FontWeight.w400, alignment: TextAlign.left,),
                                       ),
                                     )
@@ -108,7 +126,7 @@ class _RecentRecipient extends State<RecentRecipient>{
                       )
                   );
                 }else{
-                  return EmptyScreen(titre: "Aucun bénéficiaire recent", subTitle: "Vous n'avez encore effectué aucun envoi de fonds; faites-le dès maintenant en mode Lightning.", image: PackageImage.Image_2,);
+                  return EmptyScreen(titre: "Aucun bénéficiaire", subTitle: "Ajouter un bénéficiaire pour lui envoyer des fonds", image: PackageImage.Image_1,);
                 }
                 break;
               default:
@@ -127,17 +145,13 @@ class _RecentRecipient extends State<RecentRecipient>{
     );
   }
 
-  void setupSub() {
-    sub=DatabaseService().userCollection.where("uid", isEqualTo: me.uid).snapshots().listen((users){
-      users.documents.forEach((user) {
-        user.reference.collection('transactions').snapshots().listen((transactions) {
-          transactions.documents.forEach((transaction) {
-            user.reference.collection('recipients').where('rid', isEqualTo: transaction.data['rid']).snapshots().listen((recipients) {
-              recipients.documents.forEach((recipient) {
-                setState(() {
-                  recipientList=Methodes().getRecipients(recipient, recipientList);
-                });
-              });
+  setupSub(){
+    sub=DatabaseService().userCollection.where("uid", isEqualTo: user.uid).snapshots().listen((datas){
+      datas.documents.forEach((docs){
+        docs.reference.collection("recipients").snapshots().listen((recipients){
+          recipients.documents.forEach((recipient) {
+            setState(() {
+              _recipientsList=Methodes().getRecipients(recipient, _recipientsList);
             });
           });
         });

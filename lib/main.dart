@@ -1,6 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:money_transfert/home.dart';
+import 'package:money_transfert/Home.dart';
 import 'package:money_transfert/view/my_widgets/constants.dart';
 import 'package:money_transfert/view/my_widgets/menu_two_item.dart';
 import 'package:money_transfert/view/my_widgets/my_gradiant.dart';

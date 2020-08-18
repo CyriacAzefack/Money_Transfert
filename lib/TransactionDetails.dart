@@ -296,7 +296,7 @@ class _TransactionDetails extends State<TransactionDetails>{
                                           fit: FlexFit.loose,
                                           flex: 2,
                                           child: MyText(
-                                            "${globalTransaction.amountSend} "+CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(me.country).isoCode).currencyCode,
+                                            "${globalTransaction.amountSend} "+CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(user.country).isoCode).currencyCode,
                                             alignment: TextAlign.end,
                                             fontSize: 12.0,
                                             factor:1.25,
@@ -323,7 +323,7 @@ class _TransactionDetails extends State<TransactionDetails>{
                                           fit: FlexFit.loose,
                                           flex: 2,
                                           child: MyText(
-                                            "${globalTransaction.transactionFees} "+CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(me.country).isoCode).currencyCode,
+                                            "${globalTransaction.transactionFees} "+CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(user.country).isoCode).currencyCode,
                                             alignment: TextAlign.end,
                                             fontSize: 12.0,
                                             factor:1.25,
@@ -350,7 +350,7 @@ class _TransactionDetails extends State<TransactionDetails>{
                                           fit: FlexFit.loose,
                                           flex: 2,
                                           child: MyText(
-                                            "${globalTransaction.amountPaid} "+CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(me.country).isoCode).currencyCode,
+                                            "${globalTransaction.amountPaid} "+CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(user.country).isoCode).currencyCode,
                                             alignment: TextAlign.end,
                                             fontSize: 12.0,
                                             factor:1.25,

@@ -18,7 +18,7 @@ import 'package:money_transfert/view/my_widgets/padding_with_child.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'error/api_error.dart';
-import 'home.dart';
+import 'Home.dart';
 import 'models/convertion.dart';
 
 final RouteObserver<PageRoute> routeObserver = new RouteObserver<PageRoute>();
@@ -70,7 +70,7 @@ class _RecipientSend extends State<RecipientSend> with RouteAware {
     preferences.setString(
         "currencyParam",
         CurrencyPickerUtils.getCountryByIsoCode(
-                CountryPickerUtils.getCountryByName(me.country).isoCode)
+                CountryPickerUtils.getCountryByName(user.country).isoCode)
             .currencyCode);
     preferences.setString(
         "toParam",
@@ -382,7 +382,7 @@ class _RecipientSend extends State<RecipientSend> with RouteAware {
                                       .getCountryByIsoCode(
                                       CountryPickerUtils
                                           .getCountryByName(
-                                          me.country)
+                                          user.country)
                                           .isoCode)
                                       .currencyCode ==
                                       "EUR")
@@ -403,9 +403,9 @@ class _RecipientSend extends State<RecipientSend> with RouteAware {
                               fontWeight: FontWeight.w500),
                           decoration: new InputDecoration(
                             labelText:
-                            "${me.surname.split(" ")[0].substring(0, 1)}"
+                            "${user.surname.split(" ")[0].substring(0, 1)}"
                                 .toUpperCase() +
-                                "${me.surname.split(" ")[0].substring(1).toLowerCase()} envoie"
+                                "${user.surname.split(" ")[0].substring(1).toLowerCase()} envoie"
                                     .toLowerCase(),
                             hintStyle: TextStyle(color: Colors.grey),
                             fillColor: black,
@@ -422,7 +422,7 @@ class _RecipientSend extends State<RecipientSend> with RouteAware {
                                         .getDefaultFlagImage(
                                         CountryPickerUtils
                                             .getCountryByName(
-                                            me.country)),
+                                            user.country)),
                                   ),
                                 )),
                             suffixIcon: PaddingWith(
@@ -439,7 +439,7 @@ class _RecipientSend extends State<RecipientSend> with RouteAware {
                                             .getCountryByIsoCode(
                                             CountryPickerUtils
                                                 .getCountryByName(
-                                                me.country)
+                                                user.country)
                                                 .isoCode)
                                             .currencyCode,
                                         weight: FontWeight.bold,
@@ -516,7 +516,7 @@ class _RecipientSend extends State<RecipientSend> with RouteAware {
                                       .getCountryByIsoCode(
                                       CountryPickerUtils
                                           .getCountryByName(
-                                          me.country)
+                                          user.country)
                                           .isoCode)
                                       .currencyCode ==
                                       "EUR")
@@ -607,7 +607,7 @@ class _RecipientSend extends State<RecipientSend> with RouteAware {
                     bottom: 1.0,
                     top: 3.0,
                     widget: MyText(
-                      "Taux de change 1 ${CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(me.country).isoCode).currencyCode} = ${(CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(me.country).isoCode).currencyCode == "EUR") ? 655.000 : (convertedValue - ((convertedValue * 4) / 100)).toStringAsFixed(5)}${CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(globalRecipient.country).isoCode).currencyCode}",
+                      "Taux de change 1 ${CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(user.country).isoCode).currencyCode} = ${(CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(user.country).isoCode).currencyCode == "EUR") ? 655.000 : (convertedValue - ((convertedValue * 4) / 100)).toStringAsFixed(5)}${CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(globalRecipient.country).isoCode).currencyCode}",
                       alignment: TextAlign.end,
                       fontSize: 15.0,
                     )),
@@ -693,7 +693,7 @@ class _RecipientSend extends State<RecipientSend> with RouteAware {
                                 top: 0.0,
                                 left: 5.0,
                                 widget: MyText(
-                                  "Payez ${_Om.toStringAsFixed(2).replaceAllMapped(reg, mathFunc)} ${CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(me.country).isoCode).currencyCode} pour retrait $modeDelivery?",
+                                  "Payez ${_Om.toStringAsFixed(2).replaceAllMapped(reg, mathFunc)} ${CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(user.country).isoCode).currencyCode} pour retrait $modeDelivery?",
                                   alignment: TextAlign.start,
                                   fontSize: 15.0,
                                   color: black,
@@ -774,7 +774,7 @@ class _RecipientSend extends State<RecipientSend> with RouteAware {
                                             PaddingWith(
                                               top: 3.0,
                                               widget: MyText(
-                                                "${(frais + OM).toStringAsFixed(2).replaceAllMapped(reg, mathFunc)}${CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(me.country).isoCode).currencyCode}",
+                                                "${(frais + OM).toStringAsFixed(2).replaceAllMapped(reg, mathFunc)}${CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(user.country).isoCode).currencyCode}",
                                                 alignment: TextAlign.end,
                                                 fontSize: 15.0,
                                                 weight: FontWeight.bold,
@@ -801,7 +801,7 @@ class _RecipientSend extends State<RecipientSend> with RouteAware {
                                                   fontSize: 15.0,
                                                 ),
                                                 MyText(
-                                                  "${(frais).toStringAsFixed(2).replaceAllMapped(reg, mathFunc)}${CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(me.country).isoCode).currencyCode}",
+                                                  "${(frais).toStringAsFixed(2).replaceAllMapped(reg, mathFunc)}${CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(user.country).isoCode).currencyCode}",
                                                   alignment: TextAlign.end,
                                                   fontSize: 15.0,
                                                 )
@@ -826,7 +826,7 @@ class _RecipientSend extends State<RecipientSend> with RouteAware {
                                                   fontSize: 15.0,
                                                 ),
                                                 MyText(
-                                                  "${OM.toStringAsFixed(2).replaceAllMapped(reg, mathFunc)}${CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(me.country).isoCode).currencyCode}",
+                                                  "${OM.toStringAsFixed(2).replaceAllMapped(reg, mathFunc)}${CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(user.country).isoCode).currencyCode}",
                                                   alignment: TextAlign.end,
                                                   fontSize: 15.0,
                                                 )
@@ -855,7 +855,7 @@ class _RecipientSend extends State<RecipientSend> with RouteAware {
                                             height: 3.0,
                                           ),
                                           MyText(
-                                            "${total.toStringAsFixed(2).replaceAllMapped(reg, mathFunc)} ${CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(me.country).isoCode).currencyCode}",
+                                            "${total.toStringAsFixed(2).replaceAllMapped(reg, mathFunc)} ${CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(user.country).isoCode).currencyCode}",
                                             fontSize: 25.0,
                                             weight: FontWeight.bold,
                                             color: pointer,
@@ -920,7 +920,7 @@ class _RecipientSend extends State<RecipientSend> with RouteAware {
                                 double.parse(tansfertFee.replaceAll(',', '')))
                                 .toStringAsFixed(2);
                             DatabaseService().addTransaction(
-                                me.uid,
+                                user.uid,
                                 globalRecipient.documentId,
                                 amountSend,
                                 receivedAmount,
@@ -932,7 +932,7 @@ class _RecipientSend extends State<RecipientSend> with RouteAware {
                             Navigator.pushAndRemoveUntil(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => Home(me.uid)),
+                                  builder: (context) => Home(user.uid)),
                                   (Route<dynamic> route) => false,
                             );
                             showCustomBlueFlushBar(context, "Votre transaction a été enregistrer avec succès");
@@ -987,7 +987,7 @@ class _RecipientSend extends State<RecipientSend> with RouteAware {
                         color: Colors.grey,
                       ),
                       MyText(
-                        "${double.parse((txtS.text.isEmpty) ? "0" : txtS.text.replaceAll(',', '')).toStringAsFixed(2).replaceAllMapped(reg, mathFunc)} ${CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(me.country).isoCode).currencyCode}",
+                        "${double.parse((txtS.text.isEmpty) ? "0" : txtS.text.replaceAll(',', '')).toStringAsFixed(2).replaceAllMapped(reg, mathFunc)} ${CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(user.country).isoCode).currencyCode}",
                         alignment: TextAlign.end,
                         fontSize: 15.0,
                       )
@@ -1013,7 +1013,7 @@ class _RecipientSend extends State<RecipientSend> with RouteAware {
                         color: Colors.grey,
                       ),
                       MyText(
-                        "1 ${CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(me.country).isoCode).currencyCode} = ${(CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(me.country).isoCode).currencyCode == "EUR") ? 655.000 : (convertedValue - ((convertedValue * 4) / 100)).toStringAsFixed(5)} ${CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(globalRecipient.country).isoCode).currencyCode}",
+                        "1 ${CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(user.country).isoCode).currencyCode} = ${(CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(user.country).isoCode).currencyCode == "EUR") ? 655.000 : (convertedValue - ((convertedValue * 4) / 100)).toStringAsFixed(5)} ${CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(globalRecipient.country).isoCode).currencyCode}",
                         alignment: TextAlign.end,
                         fontSize: 15.0,
                       )
@@ -1039,7 +1039,7 @@ class _RecipientSend extends State<RecipientSend> with RouteAware {
                         color: Colors.grey,
                       ),
                       MyText(
-                        "+${(frais + OM).toStringAsFixed(2).replaceAllMapped(reg, mathFunc)} ${CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(me.country).isoCode).currencyCode}",
+                        "+${(frais + OM).toStringAsFixed(2).replaceAllMapped(reg, mathFunc)} ${CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(user.country).isoCode).currencyCode}",
                         alignment: TextAlign.end,
                         fontSize: 15.0,
                       )
@@ -1096,7 +1096,7 @@ class _RecipientSend extends State<RecipientSend> with RouteAware {
                         fontSize: 20.0,
                       ),
                       MyText(
-                        "${total.toStringAsFixed(2).replaceAllMapped(reg, mathFunc)} ${CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(me.country).isoCode).currencyCode}",
+                        "${total.toStringAsFixed(2).replaceAllMapped(reg, mathFunc)} ${CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(user.country).isoCode).currencyCode}",
                         alignment: TextAlign.end,
                         fontSize: 18.0,
                       )
@@ -1122,7 +1122,7 @@ class _RecipientSend extends State<RecipientSend> with RouteAware {
                         color: Colors.grey,
                       ),
                       MyText(
-                        "${(double.parse((txtR.text.isEmpty) ? "0" : txtR.text.replaceAll(',', ''))+((CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(me.country).isoCode).currencyCode == "EUR") ? OM*655.0: OM*(convertedValue - ((convertedValue * 4) / 100)))).toStringAsFixed(2).replaceAllMapped(reg, mathFunc)} ${CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(globalRecipient.country).isoCode).currencyCode}",
+                        "${(double.parse((txtR.text.isEmpty) ? "0" : txtR.text.replaceAll(',', ''))+((CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(user.country).isoCode).currencyCode == "EUR") ? OM*655.0: OM*(convertedValue - ((convertedValue * 4) / 100)))).toStringAsFixed(2).replaceAllMapped(reg, mathFunc)} ${CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(globalRecipient.country).isoCode).currencyCode}",
                         alignment: TextAlign.end,
                         fontSize: 15.0,
                       )
@@ -1142,7 +1142,7 @@ class _RecipientSend extends State<RecipientSend> with RouteAware {
     sharedPreferences.setString(
         "feekey",
         CurrencyPickerUtils.getCountryByIsoCode(
-                CountryPickerUtils.getCountryByName(me.country).isoCode)
+                CountryPickerUtils.getCountryByName(user.country).isoCode)
             .currencyCode);
     sharedPreferences.setString("tofeekey", "EUR");
     _getRates("feekey", "tofeekey");
@@ -1150,34 +1150,34 @@ class _RecipientSend extends State<RecipientSend> with RouteAware {
 
   void getFees(bool om) {
     if (CurrencyPickerUtils.getCountryByIsoCode(
-                CountryPickerUtils.getCountryByName(me.country).isoCode)
+                CountryPickerUtils.getCountryByName(user.country).isoCode)
             .currencyCode !=
         "EUR") {
       setState(() {
         sender = double.parse(txtS.text.replaceAll(',', ''));
         _om = double.parse(txtS.text.replaceAll(',', ''));
         sender = (CurrencyPickerUtils.getCountryByIsoCode(
-                        CountryPickerUtils.getCountryByName(me.country).isoCode)
+                        CountryPickerUtils.getCountryByName(user.country).isoCode)
                     .currencyCode ==
                 "EUR")
             ? getOMSend(double.parse(_getToRateFee(0, 1).replaceAll(',', '')))
             : getOMSend(double.parse(_getToRateFee(0, 4).replaceAll(',', '')));
         _om = (CurrencyPickerUtils.getCountryByIsoCode(
-                        CountryPickerUtils.getCountryByName(me.country).isoCode)
+                        CountryPickerUtils.getCountryByName(user.country).isoCode)
                     .currencyCode ==
                 "EUR")
             ? getOMTaux(double.parse(_getToRateOm(0, 1).replaceAll(',', '')))
             : getOMTaux(double.parse(_getToRateOm(0, 4).replaceAll(',', '')));
 
         this.frais = (CurrencyPickerUtils.getCountryByIsoCode(
-                        CountryPickerUtils.getCountryByName(me.country).isoCode)
+                        CountryPickerUtils.getCountryByName(user.country).isoCode)
                     .currencyCode ==
                 "EUR")
             ? double.parse(_getToRateFee(1, 1).replaceAll(',', ''))
             : double.parse(_getToRateFee(1, 4).replaceAll(',', ''));
         this.OM = (om)
             ? ((CurrencyPickerUtils.getCountryByIsoCode(
-                            CountryPickerUtils.getCountryByName(me.country)
+                            CountryPickerUtils.getCountryByName(user.country)
                                 .isoCode)
                         .currencyCode ==
                     "EUR")
@@ -1185,7 +1185,7 @@ class _RecipientSend extends State<RecipientSend> with RouteAware {
                 : double.parse(_getToRateOm(1, 4).replaceAll(',', '')))
             : 0.0;
         _Om = (CurrencyPickerUtils.getCountryByIsoCode(
-                        CountryPickerUtils.getCountryByName(me.country).isoCode)
+                        CountryPickerUtils.getCountryByName(user.country).isoCode)
                     .currencyCode ==
                 "EUR")
             ? double.parse(_getToRateOm(1, 1).replaceAll(',', ''))

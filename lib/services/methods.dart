@@ -26,7 +26,7 @@ class Methodes{
 
   List<Recipient> getRecipients(DocumentSnapshot recipientDocs, List<Recipient> list){
     List<Recipient> myList=list;
-    Recipient recipient=Recipient(me,recipientDocs);
+    Recipient recipient=Recipient(user,recipientDocs);
     if(myList.every((r)=>r.documentId!=recipient.documentId)){
       myList.add(recipient);
     }else{
@@ -40,7 +40,7 @@ class Methodes{
 
   List<UserTransaction> getTransactions(DocumentSnapshot documentSnapshot, List<UserTransaction> list){
     List<UserTransaction> myList=list;
-    UserTransaction transaction=UserTransaction(me,documentSnapshot);
+    UserTransaction transaction=UserTransaction(user,documentSnapshot);
     if(myList.every((t)=>t.documentId!=transaction.documentId)){
       myList.add(transaction);
     }else{

@@ -1,17 +1,19 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:money_transfert/recipents.dart';
+import 'package:money_transfert/Recipients.dart';
 import 'package:money_transfert/services/authentification.dart';
 import 'package:money_transfert/view/my_widgets/myText.dart';
 
-class Account extends StatefulWidget{
-  _Account createState()=>new _Account();
+import 'TransactionsHistory.dart';
+
+
+class AccountDetails extends StatefulWidget{
+  _AccountDetails createState()=>new _AccountDetails();
 }
 
-class _Account extends State<Account>{
+class _AccountDetails extends State<AccountDetails>{
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
     return Scaffold(
       body: ListView.builder(
         itemCount: 1,
@@ -41,7 +43,7 @@ class _Account extends State<Account>{
                     leading: Icon(Icons.location_searching),
                     onTap: ((){
                       Navigator.push(context, MaterialPageRoute(builder: (BuildContext context){
-                        return new Recipients();
+                        return new FollowTransactions();
                       }));
                     }),
                   ),

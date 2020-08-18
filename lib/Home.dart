@@ -2,19 +2,19 @@ import 'dart:async';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:money_transfert/account_page.dart';
+import 'package:money_transfert/AccountDetails.dart';
 import 'package:money_transfert/controller/login.dart';
 import 'package:money_transfert/main.dart';
-import 'package:money_transfert/recent_recipient.dart';
-import 'package:money_transfert/recipents.dart';
-import 'package:money_transfert/transactions.dart';
+import 'package:money_transfert/RecentRecipients.dart';
+import 'package:money_transfert/Recipients.dart';
+import 'package:money_transfert/TransactionsHistory.dart';
 import 'package:money_transfert/services/authentification.dart';
 import 'package:money_transfert/services/database.dart';
 import 'package:money_transfert/services/methods.dart';
 import 'package:money_transfert/view/my_widgets/constants.dart';
 import 'package:money_transfert/view/my_widgets/padding_with_child.dart';
 import 'package:share/share.dart';
-import 'add_recipient.dart';
+import 'CreateRecipient.dart';
 import 'models/recipient.dart';
 import 'models/user.dart';
 
@@ -33,9 +33,9 @@ class _Home extends State<Home>{
   double width=0.0;
   int pageIndex=1;
   final pages=[
-    TransactionPages(),
+    TransactionsHistory(),
     RecentRecipient(),
-    Account(),
+    AccountDetails(),
   ];
 
   final titres=[
@@ -48,27 +48,24 @@ class _Home extends State<Home>{
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     streamListener=DatabaseService().userCollection.document(widget.uid).snapshots().listen((document){
       setState(() {
-        me=User(document);
+        user=User(document);
       });
     });
   }
 
   @override
   void dispose() {
-    // TODO: implement dispose
     streamListener.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
 
-    return (me==null)? MyHomePage() : Scaffold(
+    return (user==null)? MyHomePage() : Scaffold(
       key: scaffoldKey,
         appBar: new AppBar(
           title: new Text(titres[pageIndex]),
@@ -81,7 +78,7 @@ class _Home extends State<Home>{
                 child: (pageIndex==1)? Icon(Icons.person_add, color: white, size: 28.0, ):Container(),
                 onTap: ((){
                   Navigator.push(context, MaterialPageRoute(builder: (BuildContext context){
-                    return new AddRecipient();
+                    return new CreateRecipient();
                   }));
                 }),
               ),

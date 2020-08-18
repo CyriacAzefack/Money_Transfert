@@ -16,12 +16,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 final RouteObserver<PageRoute> routeObserver = new RouteObserver<PageRoute>();
 
-class AddRecipient extends StatefulWidget{
+class CreateRecipient extends StatefulWidget{
   @override
-  _AddRecipient createState()=>_AddRecipient();
+  _CreateRecipient createState()=>_CreateRecipient();
 }
 
-class _AddRecipient extends State<AddRecipient> with RouteAware{
+class _CreateRecipient extends State<CreateRecipient> with RouteAware{
 
   TextEditingController _Cname, _Csurname, _Ctell, _Caddress, _Cemail, _Ccity;
   GlobalKey<FormState> ckey=new GlobalKey<FormState>();
@@ -214,7 +214,7 @@ class _AddRecipient extends State<AddRecipient> with RouteAware{
   void saveRecipients(){
     if(ckey.currentState.validate()){
       Methodes().hideKeyboard(context);
-      DatabaseService().addRecipient(me.uid, _Cname.text.toString(), _Csurname.text.toString(), "+ "+CountryPickerUtils.getCountryByIso3Code(getCode()).phoneCode+" "+_Ctell.text.toString(), _Caddress.text.toString(), _Cemail.text.toString(), _Ccity.text.toString(), CountryPickerUtils.getCountryByIso3Code(getCode()).name,);
+      DatabaseService().addRecipient(user.uid, _Cname.text.toString(), _Csurname.text.toString(), "+ "+CountryPickerUtils.getCountryByIso3Code(getCode()).phoneCode+" "+_Ctell.text.toString(), _Caddress.text.toString(), _Cemail.text.toString(), _Ccity.text.toString(), CountryPickerUtils.getCountryByIso3Code(getCode()).name,);
       showCustomFlushBar(context, "${_Cname.text.toString()} ${_Csurname.text.toString()} a été ajouté à la liste de vos bénéficiaires");
       _Cname.clear();
       _Csurname.clear();

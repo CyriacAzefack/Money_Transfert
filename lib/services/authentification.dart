@@ -12,7 +12,8 @@ class AuthService{
 
   Future<FirebaseUser> signIn(String mail, String pwd, BuildContext context) async {
     try{
-      AuthResult result =await _auth.signInWithEmailAndPassword(email: mail, password: pwd);
+      // Trim the mail_address to remove the space ' ' that often appears after auto-completion
+      AuthResult result =await _auth.signInWithEmailAndPassword(email: mail.trim(), password: pwd);
       FirebaseUser user=result.user;
       return user;
     }catch(e){
@@ -29,6 +30,12 @@ class AuthService{
             break;
           case 'ERROR_WRONG_PASSWORD':
             showFlushBar(context, "Mot de passe incorrect");
+            break;
+          case 'ERROR_NETWORK_REQUEST_FAILED':
+            showFlushBar(context, "Vérifier votre connexion internet");
+            break;
+          default :
+            showFlushBar(context, "Unknown Error: ${e.code}");
             break;
         }
       }
