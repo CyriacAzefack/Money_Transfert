@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "47966785645",
+    "firebase_url": "https://moneytransfert-d9f55.firebaseio.com",
+    "project_id": "moneytransfert-d9f55",
+    "storage_bucket": "moneytransfert-d9f55.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:47966785645:android:e8184bfcd6a1777eb12f64",
+        "android_client_info": {
+          "package_name": "com.feks.money_transfert"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "47966785645-s9ok79r4nkvr8ce0t9pdqtgd0r5r6am8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBf0TM8HsXul8czV2gXadTWYqogs4ooXKU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "47966785645-s9ok79r4nkvr8ce0t9pdqtgd0r5r6am8.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
