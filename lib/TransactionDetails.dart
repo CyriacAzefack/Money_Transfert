@@ -22,7 +22,6 @@ class _TransactionDetails extends State<TransactionDetails>{
 
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
     return Scaffold(
       backgroundColor: Colors.white,
       body: CustomScrollView(
