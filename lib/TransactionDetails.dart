@@ -6,6 +6,7 @@ import 'package:country_pickers/utils/utils.dart';
 import 'package:currency_pickers/utils/utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:money_transfert/TransactionsHistory.dart';
 import 'package:money_transfert/services/database.dart';
 import 'package:money_transfert/services/methods.dart';
 import 'package:money_transfert/view/my_widgets/constants.dart';
@@ -46,11 +47,20 @@ class _TransactionDetails extends State<TransactionDetails>{
     transactionCreationDate = format.parse(globalTransaction.creationDate);
 
     // Check if transaction finished
-    if (globalTransaction.finishDate.isNotEmpty) {
-      transactionFinishDate = format.parse(globalTransaction.finishDate);
-    } else {
+    if (globalTransaction.finishDate != null) {
+      if (globalTransaction.finishDate.isNotEmpty) {
+        transactionFinishDate = format.parse(globalTransaction.finishDate);
+      }
+      else {
+        transactionDone = false;
+      }
+    }
+    else {
       transactionDone = false;
     }
+
+    (this.mounted) ? setup()  : null;
+
 
 
     // print(DateFormat.yMMMMEEEEd('fr_FR').format(transactionStartDate));
@@ -133,7 +143,7 @@ class _TransactionDetails extends State<TransactionDetails>{
                                                   factor: 1.0,
                                                 ),
                                                 MyText(
-                                                  "${transactionDone ? DateFormat("H'h'mm").format(transactionCreationDate) : ""}",
+                                                  "${DateFormat("H'h'mm").format(transactionCreationDate)}",
                                                   alignment: TextAlign.end,
                                                   fontSize: 15.0,
                                                   weight: FontWeight.w400,
@@ -604,14 +614,15 @@ class _TransactionDetails extends State<TransactionDetails>{
                       child: FlatButton(
                         onPressed: (){
                           // Update the transaction in the database
-                          // DatabaseService().finishTransaction(globalTransaction.userId, globalTransaction.documentId);
-                          // transactionDone = true;
-                          // showCustomFlushBar(context, "Transaction ${globalTransaction.documentId} est disponible pour retrait");
+                          DatabaseService().finishTransaction(globalTransaction.userId, globalTransaction.documentId);
+                          transactionDone = true;
+
                           Navigator.pushAndRemoveUntil(context,
                             MaterialPageRoute(
                                 builder: (context) => Home(user.uid)),
                                 (Route<dynamic> route) => false,
                           );
+                          showSuccessFlushBar(context, "Transaction ${globalTransaction.documentId} est disponible pour retrait");
                         },
                         child: MyText("Disponible pour retrait", fontSize: 20.0,weight: FontWeight.bold, color: white,),
                       ),
@@ -627,17 +638,34 @@ class _TransactionDetails extends State<TransactionDetails>{
     );
   }
 
-  void showCustomFlushBar(BuildContext context, String body){
+  void showSuccessFlushBar(BuildContext context, String body){
     Flushbar(
         message: body,
         icon: Icon(
           Icons.error,
           color: white,
         ),
-        backgroundColor: base,
+        backgroundColor: pointer,
         duration: Duration(seconds: 5),
-        leftBarIndicatorColor: Colors.blue[700]
+        leftBarIndicatorColor: Colors.green[700]
     )..show(context);
+  }
+
+  void setup() {
+    DatabaseService().userCollection.document(globalTransaction.userId).collection("transactions").document(globalTransaction.documentId).get().then((transition) {
+      setState(() {
+        DateFormat format = new DateFormat("yyyy-MM-dd HH:mm:ss");
+        // Check if transaction finished
+        if (transactionDone) {
+          transactionFinishDate = format.parse(transition[keyFinishDate]);
+        }
+      });
+    });
+
+
+
+
+
   }
 
 }

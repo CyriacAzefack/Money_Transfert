@@ -1,10 +1,11 @@
 import 'dart:async';
-
+import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:country_pickers/utils/utils.dart';
 import 'package:currency_pickers/utils/utils.dart';
 import 'package:money_transfert/models/recipient.dart';
 import 'package:money_transfert/view/my_widgets/constants.dart';
+import 'package:random_string/random_string.dart';
 
 class DatabaseService{
 
@@ -43,20 +44,22 @@ class DatabaseService{
   }
 
   addRecipient(String uid, String name, String surname, String numTel, String address, String email, String city, String country,){
-    var rid=userCollection.document(uid).collection("recipients").document().documentID;
+    var ridGenerated = name.substring(0,2) + surname.substring(0,2) + randomAlphaNumeric(6);
+
     Map<String, dynamic> map={
       keyUid:uid,
-      keyAddress:address,
-      keyName:name,
-      keySurname:surname,
+      keyAddress:address.trim(),
+      keyName:name.trim(),
+      keySurname:surname.trim(),
       keyNumtel:numTel,
-      keyEmail:email,
-      keyCity:city,
-      keyCountry:country,
-      keyRid:name.substring(0,3)+surname.substring(0,1)+numTel.substring(0,3)+address.substring(0,2),
+      keyEmail:email.trim(),
+      keyCity:city.trim(),
+      keyCountry:country.trim(),
+      keyRid: ridGenerated,
+      // keyRid:name.substring(0,3)+surname.substring(0,3)+numTel.substring(0,3)+address.substring(0,2),
     };
-    if(name.isNotEmpty && surname.isNotEmpty && numTel.isNotEmpty && address.isNotEmpty)
-      userCollection.document(uid).collection("recipients").document(name.substring(0,3)+surname.substring(0,1)+numTel.substring(0,3)+address.substring(0,2)).setData(map);
+    if(name.isNotEmpty && surname.isNotEmpty && numTel.isNotEmpty)
+      userCollection.document(uid).collection("recipients").document(ridGenerated).setData(map);
   }
 
   addTransaction(String uid, String rid, String amountSend, String receivedAmount, String transactionFees, String amountPaid, String status){
@@ -71,8 +74,9 @@ class DatabaseService{
       keyCreationDate:"${DateTime.now()}",
       keyFinishDate:"",
     };
+    var documentIdGenerated = CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(globalRecipient.country).isoCode).iso3Code + randomAlphaNumeric(7);
     if(amountSend.isNotEmpty && receivedAmount.isNotEmpty && transactionFees.isNotEmpty && amountPaid.isNotEmpty)
-      userCollection.document(uid).collection("transactions").document(CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(globalRecipient.country).isoCode).iso3Code+DateTime.now().day.toString()+DateTime.now().month.toString()+DateTime.now().year.toString().substring(2)+DateTime.now().hour.toString()+DateTime.now().minute.toString()).setData(map);
+      userCollection.document(uid).collection("transactions").document(documentIdGenerated).setData(map);
   }
 
   finishTransaction(String uid, String transactionId) {
@@ -80,10 +84,7 @@ class DatabaseService{
       keyFinishDate: "${DateTime.now()}",
       keyStatus: "Traité"
     };
-    
+
     userCollection.document(uid).collection("transactions").document(transactionId).setData(map, merge: true);
   }
-
-
-
 }

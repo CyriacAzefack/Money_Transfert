@@ -111,11 +111,18 @@ class _Recipients extends State<Recipients>{
                                             ),
                                           ),
                                         ),
-                                        title: MyText("${Methodes().capitalization(recipient.name)} ${Methodes().capitalization(recipient.surname)}", weight: FontWeight.w500, alignment: TextAlign.left,),
+                                        title: MyText(
+                                          "${Methodes().capitalization(recipient.name + " " + recipient.surname)}",
+                                          weight: FontWeight.w500,
+                                          alignment: TextAlign.left,
+                                        ),
                                         trailing: new IconButton(
                                             icon: new Icon(Icons.more_vert, color: black,),
                                             onPressed: (()=>print("Boutton plus"))),
-                                        subtitle:  MyText("${recipient.numTel}", weight: FontWeight.w400, alignment: TextAlign.left,),
+                                        subtitle:  MyText(
+                                          "${recipient.numTel}",
+                                          weight: FontWeight.w400,
+                                          alignment: TextAlign.left,),
                                       ),
                                     )
                                 ),

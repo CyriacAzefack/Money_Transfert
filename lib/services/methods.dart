@@ -75,15 +75,25 @@ class Methodes{
     );
   }
 
-  String capitalization(String text){
-    if(text==null) throw ArgumentError("string: $text");
+  String capitalization(String text) {
+    if (text == null) throw ArgumentError("string: $text");
 
-    if(text.isEmpty) return text;
+    if (text.isEmpty) return text;
 
-    return text
-        .split(' ')
-        .map((word)=>word.substring(0,1).toUpperCase() + word.substring(1).toLowerCase())
-        .join(' ');
+    text = text.trim();
+
+    var words = text.split(' ');
+
+    String result = "";
+    for (var word in words) {
+      result += word.substring(0,1).toUpperCase() + word.substring(1).toLowerCase() + " ";
+    }
+
+    return result.trim();
   }
+  //       .split(' ')
+  //       .map( (word) => word.substring(0,1).toUpperCase() + word.substring(1).toLowerCase())
+  //       .join(' ');
+  // }
 
 }

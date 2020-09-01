@@ -925,7 +925,7 @@ class _RecipientSend extends State<RecipientSend> with RouteAware {
                             String transactionSummary = "\*Transaction CURRENCY LIGHTNING\* \n" +
                                 "Bénéficiaire: \*${globalRecipient.name.toUpperCase()} ${globalRecipient.surname}\* \n" +
                                 "Téléphone: \*%2B${globalRecipient.numTel.replaceAll('+', '').substring(1)}\* \n" +
-                                "Somme payé: \*${amountSend} EUR\* \n" +
+                                "Somme payée: \*${amountSend} EUR\* \n" +
                                 "Total à recevoir: \*${receivedAmount} FCFA\* \n" +
                                 "\t Crée par _${user.surname} ${user.name.toUpperCase()}_ ";
 

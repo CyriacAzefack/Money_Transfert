@@ -44,6 +44,7 @@ dependencies:
   expandable_bottom_sheet: ^0.2.1+1
   giffy_dialog: ^1.8.0
   url_launcher: ^5.4.1
+  random_string: ^2.1.0
 
     #dateTime
   intl: ^0.15.7
