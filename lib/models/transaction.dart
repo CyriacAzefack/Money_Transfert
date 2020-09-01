@@ -11,7 +11,8 @@ class UserTransaction{
   String receivedAmount;
   String transactionFees;
   String amountPaid;
-  String date;
+  String creationDate;
+  String finishDate;
   String status;
   User user;
 
@@ -30,7 +31,8 @@ class UserTransaction{
     transactionFees=map[keyTransactionFees];
     amountPaid=map[keyAmountPaid];
     status=map[keyStatus];
-    date=map[keyDate];
+    creationDate=map[keyCreationDate];
+    finishDate=map[keyFinishDate];
   }
 
   Map<String, dynamic> toMap(){
@@ -42,7 +44,8 @@ class UserTransaction{
       keyTransactionFees:transactionFees,
       keyAmountPaid:amountPaid,
       keyStatus:status,
-      keyDate:date,
+      keyCreationDate:creationDate,
+      keyFinishDate:finishDate,
     };
   }
 }

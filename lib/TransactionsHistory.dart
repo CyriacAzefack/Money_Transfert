@@ -73,7 +73,7 @@ class _TransactionsHistory extends State<TransactionsHistory>{
                         UserTransaction transaction=userTransactionsList[transactionIndex];
                         Recipient recipient=getRecipient(transaction.recipientId);
                         var dateFormat=new DateFormat('dd, MMM, yyyy');
-                        var date=  DateTime.parse(transaction.date);
+                        var date=  DateTime.parse(transaction.creationDate);
                         return Dismissible(
                           // Show a red background as the item is swiped away.
 

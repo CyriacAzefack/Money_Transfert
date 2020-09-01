@@ -1251,7 +1251,7 @@ class _RecipientSend extends State<RecipientSend> with RouteAware {
           color: white,
         ),
         backgroundColor: pointer,
-        duration: Duration(seconds: 10),
+        duration: Duration(seconds: 5),
         leftBarIndicatorColor: Colors.green[700]
     )..show(context);
   }

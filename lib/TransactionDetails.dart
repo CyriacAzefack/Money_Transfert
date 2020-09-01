@@ -1,15 +1,21 @@
 
-import 'dart:developer';
-
+import 'package:flushbar/flushbar.dart';
+import 'package:intl/intl.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:country_pickers/utils/utils.dart';
 import 'package:currency_pickers/utils/utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:money_transfert/services/database.dart';
 import 'package:money_transfert/services/methods.dart';
 import 'package:money_transfert/view/my_widgets/constants.dart';
 import 'package:money_transfert/view/my_widgets/myText.dart';
+import 'package:money_transfert/view/my_widgets/my_gradiant.dart';
 import 'package:money_transfert/view/my_widgets/my_timeline.dart';
 import 'package:money_transfert/view/my_widgets/padding_with_child.dart';
+
+import 'Home.dart';
+
 
 class TransactionDetails extends StatefulWidget{
   @override
@@ -19,6 +25,37 @@ class TransactionDetails extends StatefulWidget{
 class _TransactionDetails extends State<TransactionDetails>{
 
   SliverAppBar appBar;
+
+  var userCurrencyCode;
+  var recipientCurrencyCode;
+  var transactionCreationDate;
+  var transactionFinishDate;
+  var transactionDone = true;
+
+
+  @override
+  void initState() {
+    super.initState();
+    userCurrencyCode = CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(user.country).isoCode).currencyCode;
+    recipientCurrencyCode = CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(globalRecipient.country).isoCode).currencyCode;
+
+    initializeDateFormatting("fr_FR");
+
+    DateFormat format = new DateFormat("yyyy-MM-dd HH:mm:ss");
+
+    transactionCreationDate = format.parse(globalTransaction.creationDate);
+
+    // Check if transaction finished
+    if (globalTransaction.finishDate.isNotEmpty) {
+      transactionFinishDate = format.parse(globalTransaction.finishDate);
+    } else {
+      transactionDone = false;
+    }
+
+
+    // print(DateFormat.yMMMMEEEEd('fr_FR').format(transactionStartDate));
+
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +75,7 @@ class _TransactionDetails extends State<TransactionDetails>{
               child: FlexibleSpaceBar(
                 centerTitle: false,
                 collapseMode: CollapseMode.pin,
-                title:  MyText("Envoie de ${globalTransaction.receivedAmount} ${CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(globalRecipient.country).isoCode).currencyCode} à ${Methodes().capitalization(globalRecipient.name)+" "+Methodes().capitalization(globalRecipient.surname)}",
+                title:  MyText("Envoie de ${globalTransaction.receivedAmount} $recipientCurrencyCode à ${Methodes().capitalization(globalRecipient.name)+" "+Methodes().capitalization(globalRecipient.surname)}",
                   weight: FontWeight.w700,
                   factor: 1.25,
                   color: white,
@@ -96,7 +133,7 @@ class _TransactionDetails extends State<TransactionDetails>{
                                                   factor: 1.0,
                                                 ),
                                                 MyText(
-                                                  "16h45",
+                                                  "${transactionDone ? DateFormat("H'h'mm").format(transactionCreationDate) : ""}",
                                                   alignment: TextAlign.end,
                                                   fontSize: 15.0,
                                                   weight: FontWeight.w400,
@@ -107,7 +144,7 @@ class _TransactionDetails extends State<TransactionDetails>{
                                         new Padding(
                                           padding: new EdgeInsets.only(left: 25.0, top: 2.0),
                                           child: MyText(
-                                            "Mer, 12 Mai 2004",
+                                            "${DateFormat.yMMMMEEEEd('fr_FR').format(transactionCreationDate)}",
                                             fontSize: 15.0,
                                             weight: FontWeight.w400,
                                           ),
@@ -128,11 +165,11 @@ class _TransactionDetails extends State<TransactionDetails>{
                                         ),
                                         new Padding(
                                           padding: new EdgeInsets.only(left: 25.0, top: 2.0),
-                                          child: MyText(
-                                            "Mer, 12 Mai 2004",
-                                            fontSize: 15.0,
-                                            weight: FontWeight.w400,
-                                          ),
+                                          // child: MyText(
+                                          //   "Mer, 12 Mai 2004",
+                                          //   fontSize: 15.0,
+                                          //   weight: FontWeight.w400,
+                                          // ),
                                         ),
                                       ],
                                     ),
@@ -147,13 +184,13 @@ class _TransactionDetails extends State<TransactionDetails>{
                                               crossAxisAlignment: CrossAxisAlignment.center,
                                               children: <Widget>[
                                                 MyText(
-                                                  "Disponible pour retrait",
+                                                  "${transactionDone ? "" : "Non"} Disponible pour retrait",
                                                   alignment: TextAlign.start,
                                                   weight: FontWeight.w500,
                                                   factor: 1.0,
                                                 ),
                                                 MyText(
-                                                  "16h55",
+                                                  "${transactionDone ? DateFormat("H'h'mm").format(transactionFinishDate) : ""}",
                                                   alignment: TextAlign.end,
                                                   fontSize: 15.0,
                                                   weight: FontWeight.w400,
@@ -164,7 +201,7 @@ class _TransactionDetails extends State<TransactionDetails>{
                                         new Padding(
                                           padding: new EdgeInsets.only(left: 25.0, top: 2.0),
                                           child: MyText(
-                                            "Mer, 12 Mai 2004",
+                                            "${transactionDone ? DateFormat.yMMMMEEEEd('fr_FR').format(transactionCreationDate) : "..."}",
                                             fontSize: 15.0,
                                             weight: FontWeight.w400,
                                           ),
@@ -560,6 +597,25 @@ class _TransactionDetails extends State<TransactionDetails>{
                         ],
                       ),
                     ),
+                    !transactionDone ? Container(
+                      width: MediaQuery.of(context).size.width/2,
+                      height: 50.0,
+                      decoration: MyGradiant(startColor: Colors.greenAccent, endColor: pointer, radius: 5.0, horizontal: true),
+                      child: FlatButton(
+                        onPressed: (){
+                          // Update the transaction in the database
+                          // DatabaseService().finishTransaction(globalTransaction.userId, globalTransaction.documentId);
+                          // transactionDone = true;
+                          // showCustomFlushBar(context, "Transaction ${globalTransaction.documentId} est disponible pour retrait");
+                          Navigator.pushAndRemoveUntil(context,
+                            MaterialPageRoute(
+                                builder: (context) => Home(user.uid)),
+                                (Route<dynamic> route) => false,
+                          );
+                        },
+                        child: MyText("Disponible pour retrait", fontSize: 20.0,weight: FontWeight.bold, color: white,),
+                      ),
+                    ) : Container(),
                     SizedBox(height: 5.0,),
                   ],
                 ),
@@ -570,4 +626,18 @@ class _TransactionDetails extends State<TransactionDetails>{
       )
     );
   }
+
+  void showCustomFlushBar(BuildContext context, String body){
+    Flushbar(
+        message: body,
+        icon: Icon(
+          Icons.error,
+          color: white,
+        ),
+        backgroundColor: base,
+        duration: Duration(seconds: 5),
+        leftBarIndicatorColor: Colors.blue[700]
+    )..show(context);
+  }
+
 }

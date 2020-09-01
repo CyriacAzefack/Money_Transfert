@@ -20,7 +20,7 @@ class DatabaseService{
     Map<String, dynamic> map={
       keyUid: from,
       keyText: text,
-      keyDate: DateTime.now().millisecondsSinceEpoch.toInt(),
+      keyCreationDate: DateTime.now().millisecondsSinceEpoch.toInt(),
     };
     notificationCollection.document(to).collection('SingleNotification').add(map);
   }
@@ -68,12 +68,21 @@ class DatabaseService{
       keyTransactionFees:transactionFees,
       keyAmountPaid:amountPaid,
       keyStatus:status,
-      keyDate:"${DateTime.now()}",
+      keyCreationDate:"${DateTime.now()}",
+      keyFinishDate:"",
     };
     if(amountSend.isNotEmpty && receivedAmount.isNotEmpty && transactionFees.isNotEmpty && amountPaid.isNotEmpty)
       userCollection.document(uid).collection("transactions").document(CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(globalRecipient.country).isoCode).iso3Code+DateTime.now().day.toString()+DateTime.now().month.toString()+DateTime.now().year.toString().substring(2)+DateTime.now().hour.toString()+DateTime.now().minute.toString()).setData(map);
   }
 
+  finishTransaction(String uid, String transactionId) {
+    Map<String, dynamic> map={
+      keyFinishDate: "${DateTime.now()}",
+      keyStatus: "Traité"
+    };
+    
+    userCollection.document(uid).collection("transactions").document(transactionId).setData(map, merge: true);
+  }
 
 
 
