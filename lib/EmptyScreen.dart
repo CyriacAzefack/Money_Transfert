@@ -21,7 +21,6 @@ class _EmptyScreen extends State<EmptyScreen>{
 
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
     return Scaffold(
       body: Center(
           child: Container(

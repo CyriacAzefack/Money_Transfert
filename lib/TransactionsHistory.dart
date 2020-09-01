@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:country_pickers/utils/utils.dart';
 import 'package:currency_pickers/utils/utils.dart';
 import 'package:empty_widget/empty_widget.dart';
+import 'package:flushbar/flushbar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -23,6 +24,9 @@ import 'package:money_transfert/view/my_widgets/padding_with_child.dart';
 import 'models/user.dart';
 
 class TransactionsHistory extends StatefulWidget{
+
+  TransactionsHistory({Key key}) : super(key: key);
+
   @override
   _TransactionsHistory createState()=>new _TransactionsHistory();
 }
@@ -30,7 +34,7 @@ class TransactionsHistory extends StatefulWidget{
 
 class _TransactionsHistory extends State<TransactionsHistory>{
 
-  List<UserTransaction> list=[];
+  List<UserTransaction> userTransactionsList=[];
   List<Recipient> recipientList=[];
   StreamSubscription sub;
 
@@ -41,7 +45,8 @@ class _TransactionsHistory extends State<TransactionsHistory>{
   void initState() {
 
     super.initState();
-    setupSub();
+    (user!=null && this.mounted) ? setupSub() : null;
+
   }
 
   @override
@@ -63,123 +68,151 @@ class _TransactionsHistory extends State<TransactionsHistory>{
               if(snapshot.data.documents.length>0){
                 return Center(
                   child: ListView.builder(
-                      itemCount: list.length,
-                      itemBuilder: ((context, i){
-                        UserTransaction transaction=list[i];
+                      itemCount: userTransactionsList.length,
+                      itemBuilder: ((context, transactionIndex){
+                        UserTransaction transaction=userTransactionsList[transactionIndex];
                         Recipient recipient=getRecipient(transaction.recipientId);
                         var dateFormat=new DateFormat('dd, MMM, yyyy');
                         var date=  DateTime.parse(transaction.date);
-                        return Card(
-                            elevation: 5.0,
-                            margin: EdgeInsets.all(3.0),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
-                            child: InkWell(
-                              onTap: (){
-                                globalRecipient=recipient;
-                                globalTransaction=transaction;
-                                Navigator.push(context, new MaterialPageRoute(builder: (BuildContext context){
-                                  return new TransactionDetails();
-                                }));
-                              },
-                              child: Container(
-                                padding: EdgeInsets.only(left: 3.0, right: 3.0, top: 1.0, bottom: 1.0),
-                                width: MediaQuery.of(context).size.width,
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                                  children: <Widget>[
-                                    Container(
-                                      width: MediaQuery.of(context).size.width,
-                                      padding: EdgeInsets.only(left: 15.0, right: 15.0),
-                                      child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: <Widget>[
-                                          Align(
-                                            alignment: Alignment.centerLeft,
-                                            child: MyText(
-                                              "${dateFormat.format(date)}",
-                                              color: black,
-                                              weight: FontWeight.w400,
-                                              fontSize: 15.0,
-                                            ),
-                                          ),
-                                          Align(
-                                            alignment: Alignment.centerRight,
-                                            child: MyText(
-                                              "${transaction.status}",
-                                              color: black,
-                                              weight: FontWeight.w400,
-                                              fontSize: 15.0,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    ListTile(
-                                      leading: CircleAvatar(
-                                        radius: 22.0,
-                                        child: ClipOval(
-                                          child: SizedBox(
-                                              width: 44.0,
-                                              height: 44.0,
-                                              child: FittedBox(
-                                                fit: BoxFit.fill,
-                                                alignment: Alignment.center,
-                                                child: CountryPickerUtils.getDefaultFlagImage(CountryPickerUtils.getCountryByName(recipient.country)),
-                                              )
-                                          ),
-                                        ),
-                                      ),
-                                      title: Container(
+                        return Dismissible(
+                          // Show a red background as the item is swiped away.
+
+                          background: Container(
+                            alignment: Alignment.centerRight,
+                            padding: EdgeInsets.only(right: 20.0),
+                            color: Colors.red,
+                            child: Icon(
+                              Icons.delete,
+                              color: Colors.white,
+                            ),
+                          ),
+                          key: Key(transaction.documentId),
+                          onDismissed: (direction) {
+
+                            deleteTransaction(transactionIndex);
+
+                            //To show a snackbar with the UNDO button
+                            Scaffold.of(context).showSnackBar(SnackBar(
+                                content: Text("Transaction supprimée"),
+                                action: SnackBarAction(
+                                    label: "Annuler",
+                                    onPressed: () {
+                                      //To undo deletion
+                                      undoDeletion(transactionIndex, transaction);
+                                    })));
+                          },
+                          child: Card(
+                              elevation: 5.0,
+                              margin: EdgeInsets.all(3.0),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
+                              child: InkWell(
+                                onTap: (){
+                                  globalRecipient=recipient;
+                                  globalTransaction=transaction;
+                                  Navigator.push(context, new MaterialPageRoute(builder: (BuildContext context){
+                                    return new TransactionDetails();
+                                  }));
+                                },
+                                child: Container(
+                                  padding: EdgeInsets.only(left: 3.0, right: 3.0, top: 1.0, bottom: 1.0),
+                                  width: MediaQuery.of(context).size.width,
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                                    children: <Widget>[
+                                      Container(
+                                        width: MediaQuery.of(context).size.width,
+                                        padding: EdgeInsets.only(left: 15.0, right: 15.0),
                                         child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                           children: <Widget>[
-                                            Flexible(
-                                              child: MyText("${Methodes().capitalization(recipient.name) +" "+ Methodes().capitalization(recipient.surname)}",
-                                                weight: FontWeight.w500,
-                                                alignment: TextAlign.left,
-                                                factor: 1.20,
+                                            Align(
+                                              alignment: Alignment.centerLeft,
+                                              child: MyText(
+                                                "${dateFormat.format(date)}",
+                                                color: black,
+                                                weight: FontWeight.w400,
                                                 fontSize: 15.0,
-                                                overflow: TextOverflow.ellipsis,
-                                                maxLine: 1,
                                               ),
-                                            )
+                                            ),
+                                            Align(
+                                              alignment: Alignment.centerRight,
+                                              child: MyText(
+                                                "${transaction.status}",
+                                                color: black,
+                                                weight: FontWeight.w400,
+                                                fontSize: 15.0,
+                                              ),
+                                            ),
                                           ],
                                         ),
                                       ),
-                                      trailing: Wrap(
-                                        spacing: 2.0,
-                                        runSpacing: 2.0,
-                                        direction: Axis.vertical,
-                                        alignment: WrapAlignment.spaceAround,
-                                        children: <Widget>[
-                                          MyText(
-                                            "${double.parse(transaction.amountSend.replaceAll(',', '')).toString().replaceAllMapped(reg, mathFunc)} "+CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(user.country).isoCode).currencyCode,
-                                            color: black,
-                                            weight: FontWeight.w500,
-                                            alignment: TextAlign.right,
-                                            factor: 1.25,
-                                            fontSize: 13.0,
+                                      ListTile(
+                                        leading: CircleAvatar(
+                                          radius: 22.0,
+                                          child: ClipOval(
+                                            child: SizedBox(
+                                                width: 44.0,
+                                                height: 44.0,
+                                                child: FittedBox(
+                                                  fit: BoxFit.fill,
+                                                  alignment: Alignment.center,
+                                                  child: CountryPickerUtils.getDefaultFlagImage(CountryPickerUtils.getCountryByName(recipient.country)),
+                                                )
+                                            ),
                                           ),
-                                          MyText(
-                                            "${transaction.receivedAmount.replaceAll(',', '').replaceAllMapped(reg, mathFunc)} "+CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(recipient.country).isoCode).currencyCode,
-                                            color: black,
-                                            weight: FontWeight.w400,
-                                            fontSize: 13.0,
+                                        ),
+                                        title: Container(
+                                          child: Row(
+                                            children: <Widget>[
+                                              Flexible(
+                                                child: MyText("${Methodes().capitalization(recipient.name) +" "+ Methodes().capitalization(recipient.surname)}",
+                                                  weight: FontWeight.w500,
+                                                  alignment: TextAlign.left,
+                                                  factor: 1.20,
+                                                  fontSize: 15.0,
+                                                  overflow: TextOverflow.ellipsis,
+                                                  maxLine: 1,
+                                                ),
+                                              )
+                                            ],
                                           ),
-                                        ],
+                                        ),
+                                        trailing: Wrap(
+                                          spacing: 2.0,
+                                          runSpacing: 2.0,
+                                          direction: Axis.vertical,
+                                          alignment: WrapAlignment.spaceAround,
+                                          children: <Widget>[
+                                            MyText(
+                                              "${double.parse(transaction.amountSend.replaceAll(',', '')).toString().replaceAllMapped(reg, mathFunc)} "+CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(user.country).isoCode).currencyCode,
+                                              color: black,
+                                              weight: FontWeight.w500,
+                                              alignment: TextAlign.right,
+                                              factor: 1.25,
+                                              fontSize: 13.0,
+                                            ),
+                                            MyText(
+                                              "${transaction.receivedAmount.replaceAll(',', '').replaceAllMapped(reg, mathFunc)} "+CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(recipient.country).isoCode).currencyCode,
+                                              color: black,
+                                              weight: FontWeight.w400,
+                                              fontSize: 13.0,
+                                            ),
+                                          ],
+                                        ),
+                                        subtitle: MyText(
+                                          "Orange Money",
+                                          color: black,
+                                          alignment: TextAlign.left,
+                                          weight: FontWeight.w300,
+                                          fontSize: 13.0,
+                                        ),
                                       ),
-                                      subtitle: MyText(
-                                        "Orange Money",
-                                        color: black,
-                                        alignment: TextAlign.left,
-                                        weight: FontWeight.w300,
-                                        fontSize: 13.0,
-                                      ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            )
+                              )
+                          )
                         );
                       })
                   ),
@@ -211,7 +244,7 @@ class _TransactionsHistory extends State<TransactionsHistory>{
         user.reference.collection('transactions').orderBy('date', descending: true).snapshots().listen((transactions) {
           transactions.documents.forEach((transaction) {
             setState(() {
-              list=Methodes().getTransactions(transaction, list);
+              userTransactionsList=Methodes().getTransactions(transaction, userTransactionsList);
             });
             user.reference.collection('recipients').where('rid', isEqualTo: transaction.data['rid']).snapshots().listen((recipients) {
               recipients.documents.forEach((recipient) {
@@ -223,6 +256,27 @@ class _TransactionsHistory extends State<TransactionsHistory>{
           });
         });
       });
+    });
+  }
+
+  void deleteTransaction(index){
+    /*
+  By implementing this method, it ensures that upon being dismissed from our widget tree,
+  the item is removed from our list of items and our list is updated, hence
+  preventing the "Dismissed widget still in widget tree error" when we reload.
+  */
+    setState((){
+      userTransactionsList.removeAt(index);
+    });
+  }
+
+  void undoDeletion(index, transaction){
+    /*
+  This method accepts the parameters index and item and re-inserts the {item} at
+  index {index}
+  */
+    setState((){
+      userTransactionsList.insert(index, transaction);
     });
   }
 
@@ -260,3 +314,4 @@ class _FollowTransactions extends State<FollowTransactions> {
     );
   }
 }
+

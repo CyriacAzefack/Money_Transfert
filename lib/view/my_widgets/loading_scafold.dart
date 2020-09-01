@@ -6,7 +6,6 @@ import 'package:money_transfert/view/my_widgets/myText.dart';
 class LoadingScaffold extends StatelessWidget{
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
     return Scaffold(
       body: SafeArea(
           child: LoadingCenter(),

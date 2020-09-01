@@ -96,7 +96,6 @@ class _CreateRecipient extends State<CreateRecipient> with RouteAware{
 
   @override
   void dispose() {
-    // TODO: implement dispose
     routeObserver.unsubscribe(this);
     _Cname.dispose();
     _Csurname.dispose();
@@ -108,7 +107,6 @@ class _CreateRecipient extends State<CreateRecipient> with RouteAware{
   }
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
     return Scaffold(
       key: scaffoldKey,
       appBar: AppBar(

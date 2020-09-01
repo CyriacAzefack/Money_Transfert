@@ -45,7 +45,6 @@ class _Recipients extends State<Recipients>{
 
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
     return new Scaffold(
         key: scaffoldKey,
         appBar: AppBar(

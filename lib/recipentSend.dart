@@ -1,4 +1,5 @@
 import 'dart:collection';
+import 'dart:io';
 
 import 'package:country_pickers/country_pickers.dart';
 import 'package:currency_pickers/utils/utils.dart';
@@ -16,6 +17,8 @@ import 'package:money_transfert/view/my_widgets/myText.dart';
 import 'package:money_transfert/view/my_widgets/my_gradiant.dart';
 import 'package:money_transfert/view/my_widgets/padding_with_child.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:giffy_dialog/giffy_dialog.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'error/api_error.dart';
 import 'Home.dart';
@@ -44,6 +47,8 @@ class _RecipientSend extends State<RecipientSend> with RouteAware {
   String modeDelivery = "Orange Money";
   double sender = 0.0, _om = 0.0;
   bool check = false, expand=false;
+  var userCurrencyCode;
+  var recipientCurrencyCode;
 
   dynamic preferences = SharedPreferences;
 
@@ -67,28 +72,30 @@ class _RecipientSend extends State<RecipientSend> with RouteAware {
 
   void _initPreferences() async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
+
+    userCurrencyCode = CurrencyPickerUtils.getCountryByIsoCode(
+        CountryPickerUtils.getCountryByName(user.country).isoCode).currencyCode;
+
+    recipientCurrencyCode = CurrencyPickerUtils.getCountryByIsoCode(
+        CountryPickerUtils.getCountryByName(globalRecipient.country).isoCode)
+        .currencyCode;
+
     preferences.setString(
-        "currencyParam",
-        CurrencyPickerUtils.getCountryByIsoCode(
-                CountryPickerUtils.getCountryByName(user.country).isoCode)
-            .currencyCode);
+        "currencyFromParam", userCurrencyCode);
+
     preferences.setString(
-        "toParam",
-        CurrencyPickerUtils.getCountryByIsoCode(
-                CountryPickerUtils.getCountryByName(globalRecipient.country)
-                    .isoCode)
-            .currencyCode);
+        "currencyToParam", recipientCurrencyCode);
     setState(() {
       this.preferences = preferences;
       _isRatesLoading = true;
       _isConvertionLoading = true;
-      _getRates("currencyParam", "toParam");
+      _getRates("currencyFromParam", "currencyToParam");
     });
   }
 
-  void _getRates(String string, String string2) async {
-    if (string == "currencyParam") {
-      final response = await service.getRates(string);
+  void _getRates(String fromCurrency, String toCurrency) async {
+    if (fromCurrency == "currencyFromParam") {
+      final response = await service.getRates(fromCurrency);
       if (response is Map) {
         this.keyIndices.clear();
         for (var key in response.keys) {
@@ -98,13 +105,13 @@ class _RecipientSend extends State<RecipientSend> with RouteAware {
         setState(() {
           this.rates = response;
           _isRatesLoading = false;
-          _getConvertion(string, string2);
+          _getConvertion(fromCurrency, toCurrency);
         });
       } else if (response is ApiError) {
         _showDialog("Error", response.error);
       }
     } else {
-      final response = await service.getRates(string);
+      final response = await service.getRates(fromCurrency);
       if (response is Map) {
         this.keyIndices2.clear();
         for (var key in response.keys) {
@@ -113,7 +120,7 @@ class _RecipientSend extends State<RecipientSend> with RouteAware {
         setState(() {
           this.rates2 = response;
           _isRatesLoading = false;
-          _getConvertion(string, string2);
+          _getConvertion(fromCurrency, toCurrency);
         });
       } else if (response is ApiError) {
         _showDialog("Error", response.error);
@@ -195,7 +202,7 @@ class _RecipientSend extends State<RecipientSend> with RouteAware {
   }
 
   void _getConvertion(String string, String string2) async {
-    if (string == "currencyParam") {
+    if (string == "currencyFromParam") {
       final response = await service.getConvertion(string, string2);
       if (response is Convertion) {
         setState(() {
@@ -261,13 +268,12 @@ class _RecipientSend extends State<RecipientSend> with RouteAware {
       _isRatesLoading = true;
       _isConvertionLoading = true;
     });
-    _getRates("currencyParam", "toParam");
+    _getRates("currencyFromParam", "currencyToParam");
     _getRates("feekey", "tofeekey");
   }
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     initfees();
     _initPreferences();
@@ -277,7 +283,6 @@ class _RecipientSend extends State<RecipientSend> with RouteAware {
 
   @override
   void dispose() {
-    // TODO: implement dispose
     routeObserver.unsubscribe(this);
     txtR.dispose();
     txtS.dispose();
@@ -286,7 +291,6 @@ class _RecipientSend extends State<RecipientSend> with RouteAware {
 
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
     return new Scaffold(
         appBar: new AppBar(
           title: new MyText(
@@ -340,13 +344,13 @@ class _RecipientSend extends State<RecipientSend> with RouteAware {
                           controller: txtS,
                           validator: (value) {
                             return (value.isEmpty)
-                                ? "Enter un montant"
+                                ? "Entrer un montant"
                                 : null;
                           },
                           cursorColor: black.withOpacity(0.5),
                           onTap: () {
                             setState(() {
-                              txtR.clear();
+                              // txtR.clear();
                               frais = 0.0;
                               total = 0.0;
                               OM = 0.0;
@@ -364,9 +368,9 @@ class _RecipientSend extends State<RecipientSend> with RouteAware {
                                 txtR.clear();
                                 this.currentValue = 0;
                               } else {
-                                if(double.parse(string.replaceAll(',', ''))*convertedValue>20000000){
+                                if(double.parse(string.replaceAll(',', ''))*convertedValue>20000000){ // TODO: WTF is this
                                   Methodes().hideKeyboard(context);
-                                  showCustomFlushBar(context, "Le montant maximum est atteind");
+                                  showFailedFlushBar(context, "Le montant maximum est atteint");
                                   txtR.clear();
                                   txtS.clear();
                                   frais = 0.0;
@@ -473,7 +477,7 @@ class _RecipientSend extends State<RecipientSend> with RouteAware {
                           controller: txtR,
                           validator: (value) {
                             return (value.isEmpty)
-                                ? "Enter un montant"
+                                ? "Entrer un montant"
                                 : null;
                           },
                           keyboardType: TextInputType.number,
@@ -485,7 +489,7 @@ class _RecipientSend extends State<RecipientSend> with RouteAware {
                               OM = 0.0;
                               _Om = 0.0;
                             });
-                            txtS.clear();
+                            // txtS.clear();
                           },
                           onFieldSubmitted: (String str){
                             setState(() {
@@ -500,7 +504,7 @@ class _RecipientSend extends State<RecipientSend> with RouteAware {
                               } else {
                                 if(double.parse(string.replaceAll(',', ''))>20000000){
                                   Methodes().hideKeyboard(context);
-                                  showCustomFlushBar(context, "Le montant maximum est atteind");
+                                  showFailedFlushBar(context, "Le montant maximum est atteind");
                                   txtR.clear();
                                   txtS.clear();
                                   frais = 0.0;
@@ -607,7 +611,7 @@ class _RecipientSend extends State<RecipientSend> with RouteAware {
                     bottom: 1.0,
                     top: 3.0,
                     widget: MyText(
-                      "Taux de change 1 ${CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(user.country).isoCode).currencyCode} = ${(CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(user.country).isoCode).currencyCode == "EUR") ? 655.000 : (convertedValue - ((convertedValue * 4) / 100)).toStringAsFixed(5)}${CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(globalRecipient.country).isoCode).currencyCode}",
+                      "Taux de change 1 $userCurrencyCode = ${(userCurrencyCode == "EUR") ? 655.000 : (convertedValue - ((convertedValue * 4) / 100)).toStringAsFixed(5)}${recipientCurrencyCode}",
                       alignment: TextAlign.end,
                       fontSize: 15.0,
                     )),
@@ -693,7 +697,7 @@ class _RecipientSend extends State<RecipientSend> with RouteAware {
                                 top: 0.0,
                                 left: 5.0,
                                 widget: MyText(
-                                  "Payez ${_Om.toStringAsFixed(2).replaceAllMapped(reg, mathFunc)} ${CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(user.country).isoCode).currencyCode} pour retrait $modeDelivery?",
+                                  "Payez ${_Om.toStringAsFixed(2).replaceAllMapped(reg, mathFunc)} ${userCurrencyCode} pour retrait $modeDelivery?",
                                   alignment: TextAlign.start,
                                   fontSize: 15.0,
                                   color: black,
@@ -774,7 +778,7 @@ class _RecipientSend extends State<RecipientSend> with RouteAware {
                                             PaddingWith(
                                               top: 3.0,
                                               widget: MyText(
-                                                "${(frais + OM).toStringAsFixed(2).replaceAllMapped(reg, mathFunc)}${CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(user.country).isoCode).currencyCode}",
+                                                "${(frais + OM).toStringAsFixed(2).replaceAllMapped(reg, mathFunc)}$userCurrencyCode",
                                                 alignment: TextAlign.end,
                                                 fontSize: 15.0,
                                                 weight: FontWeight.bold,
@@ -801,7 +805,7 @@ class _RecipientSend extends State<RecipientSend> with RouteAware {
                                                   fontSize: 15.0,
                                                 ),
                                                 MyText(
-                                                  "${(frais).toStringAsFixed(2).replaceAllMapped(reg, mathFunc)}${CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(user.country).isoCode).currencyCode}",
+                                                  "${(frais).toStringAsFixed(2).replaceAllMapped(reg, mathFunc)}$userCurrencyCode",
                                                   alignment: TextAlign.end,
                                                   fontSize: 15.0,
                                                 )
@@ -826,7 +830,7 @@ class _RecipientSend extends State<RecipientSend> with RouteAware {
                                                   fontSize: 15.0,
                                                 ),
                                                 MyText(
-                                                  "${OM.toStringAsFixed(2).replaceAllMapped(reg, mathFunc)}${CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(user.country).isoCode).currencyCode}",
+                                                  "${OM.toStringAsFixed(2).replaceAllMapped(reg, mathFunc)}$userCurrencyCode",
                                                   alignment: TextAlign.end,
                                                   fontSize: 15.0,
                                                 )
@@ -855,7 +859,7 @@ class _RecipientSend extends State<RecipientSend> with RouteAware {
                                             height: 3.0,
                                           ),
                                           MyText(
-                                            "${total.toStringAsFixed(2).replaceAllMapped(reg, mathFunc)} ${CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(user.country).isoCode).currencyCode}",
+                                            "${total.toStringAsFixed(2).replaceAllMapped(reg, mathFunc)} $userCurrencyCode",
                                             fontSize: 25.0,
                                             weight: FontWeight.bold,
                                             color: pointer,
@@ -887,7 +891,7 @@ class _RecipientSend extends State<RecipientSend> with RouteAware {
                   onTap: (){
                     setState(() {
                       (expand) ? keySheet.currentState.contract() : keySheet.currentState.expand();
-                      expand= !expand;
+                      expand = !expand;
                     });
                   },
                   child: MyText(
@@ -913,29 +917,74 @@ class _RecipientSend extends State<RecipientSend> with RouteAware {
                     child: FlatButton(
                         onPressed: () {
                           if (key.currentState.validate()) {
-                            amountSend = txtS.text;
-                            receivedAmount = txtR.text;
-                            tansfertFee = frais.toStringAsFixed(2);
-                            totalAmount = (double.parse(amountSend.replaceAll(',', '')) +
-                                double.parse(tansfertFee.replaceAll(',', '')))
-                                .toStringAsFixed(2);
-                            DatabaseService().addTransaction(
-                                user.uid,
-                                globalRecipient.documentId,
-                                amountSend,
-                                receivedAmount,
-                                tansfertFee,
-                                totalAmount,
-                                "Enregistrer");
-                            txtR.clear();
-                            txtS.clear();
-                            Navigator.pushAndRemoveUntil(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => Home(user.uid)),
-                                  (Route<dynamic> route) => false,
-                            );
-                            showCustomBlueFlushBar(context, "Votre transaction a été enregistrer avec succès");
+                            amountSend = total.toStringAsFixed(2).replaceAllMapped(reg, mathFunc);
+                            receivedAmount = "${(double.parse((txtR.text.isEmpty) ? "0" : txtR.text.replaceAll(',', '')) + OM*655.0)}";
+                            tansfertFee = "${(frais + OM).toStringAsFixed(2).replaceAllMapped(reg, mathFunc)}";
+                            totalAmount = "${total.toStringAsFixed(2).replaceAllMapped(reg, mathFunc)}";
+
+                            String transactionSummary = "\*Transaction CURRENCY LIGHTNING\* \n" +
+                                "Bénéficiaire: \*${globalRecipient.name.toUpperCase()} ${globalRecipient.surname}\* \n" +
+                                "Téléphone: \*%2B${globalRecipient.numTel.replaceAll('+', '').substring(1)}\* \n" +
+                                "Somme payé: \*${amountSend} EUR\* \n" +
+                                "Total à recevoir: \*${receivedAmount} FCFA\* \n" +
+                                "\t Crée par _${user.surname} ${user.name.toUpperCase()}_ ";
+
+
+                            // print(transactionSummary);
+
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  title: Text("Confirmation de transaction"),
+                                  content: Text("Valider vous cette transaction?"),
+                                  actions: [
+                                    FlatButton( // Annuler
+                                      child: Text("Annuler"),
+                                      onPressed:  () {
+                                        Navigator.of(context).pop(); // dismiss dialog
+                                      },
+                                    ),
+                                    FlatButton( // Continuer
+                                      child: Text("Continuer"),
+                                      onPressed:  () {
+                                        DatabaseService().addTransaction(
+                                            user.uid,
+                                            globalRecipient.documentId,
+                                            amountSend,
+                                            receivedAmount,
+                                            tansfertFee,
+                                            totalAmount,
+                                            "Enregistrer");
+                                        txtR.clear();
+                                        txtS.clear();
+
+                                        // Navigator.pushAndRemoveUntil(context,
+                                        //   MaterialPageRoute(
+                                        //       builder: (context) => Home(user.uid)),
+                                        //       (Route<dynamic> route) => false,
+                                        // );
+                                       Navigator.of(context).pop(); // dismiss dialog
+
+                                        Navigator.pushAndRemoveUntil(context,
+                                          MaterialPageRoute(
+                                              builder: (context) => Home(user.uid)),
+                                              (Route<dynamic> route) => false,
+                                        );
+
+                                       showSuccessFlushBar(context, "Votre transaction a été enregistrer avec succès");
+                                       launchWhatsApp(message: transactionSummary);
+
+                                        // transactionDoneDialog(context);
+                                      },
+                                    ),
+                                  ],
+                                );
+                              },
+                            ); //showDialog
+
+                            // launchWhatsApp(message: transactionSummary);
+
                           }
                         },
                         child: ListTile(
@@ -987,7 +1036,7 @@ class _RecipientSend extends State<RecipientSend> with RouteAware {
                         color: Colors.grey,
                       ),
                       MyText(
-                        "${double.parse((txtS.text.isEmpty) ? "0" : txtS.text.replaceAll(',', '')).toStringAsFixed(2).replaceAllMapped(reg, mathFunc)} ${CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(user.country).isoCode).currencyCode}",
+                        "${double.parse((txtS.text.isEmpty) ? "0" : txtS.text.replaceAll(',', '')).toStringAsFixed(2).replaceAllMapped(reg, mathFunc)} $userCurrencyCode",
                         alignment: TextAlign.end,
                         fontSize: 15.0,
                       )
@@ -1013,7 +1062,7 @@ class _RecipientSend extends State<RecipientSend> with RouteAware {
                         color: Colors.grey,
                       ),
                       MyText(
-                        "1 ${CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(user.country).isoCode).currencyCode} = ${(CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(user.country).isoCode).currencyCode == "EUR") ? 655.000 : (convertedValue - ((convertedValue * 4) / 100)).toStringAsFixed(5)} ${CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(globalRecipient.country).isoCode).currencyCode}",
+                        "1 $userCurrencyCode= ${(userCurrencyCode == "EUR") ? 655.000 : (convertedValue - ((convertedValue * 4) / 100)).toStringAsFixed(5)} $recipientCurrencyCode",
                         alignment: TextAlign.end,
                         fontSize: 15.0,
                       )
@@ -1039,7 +1088,7 @@ class _RecipientSend extends State<RecipientSend> with RouteAware {
                         color: Colors.grey,
                       ),
                       MyText(
-                        "+${(frais + OM).toStringAsFixed(2).replaceAllMapped(reg, mathFunc)} ${CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(user.country).isoCode).currencyCode}",
+                        "+${(frais + OM).toStringAsFixed(2).replaceAllMapped(reg, mathFunc)} $userCurrencyCode",
                         alignment: TextAlign.end,
                         fontSize: 15.0,
                       )
@@ -1065,7 +1114,7 @@ class _RecipientSend extends State<RecipientSend> with RouteAware {
                         color: Colors.grey,
                       ),
                       MyText(
-                        "${double.parse((txtR.text.isEmpty) ? "0" : txtR.text.replaceAll(',', '')).toStringAsFixed(2).replaceAllMapped(reg, mathFunc)} ${CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(globalRecipient.country).isoCode).currencyCode}",
+                        "${double.parse((txtR.text.isEmpty) ? "0" : txtR.text.replaceAll(',', '')).toStringAsFixed(2).replaceAllMapped(reg, mathFunc)} $recipientCurrencyCode",
                         alignment: TextAlign.end,
                         fontSize: 15.0,
                       )
@@ -1096,7 +1145,7 @@ class _RecipientSend extends State<RecipientSend> with RouteAware {
                         fontSize: 20.0,
                       ),
                       MyText(
-                        "${total.toStringAsFixed(2).replaceAllMapped(reg, mathFunc)} ${CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(user.country).isoCode).currencyCode}",
+                        "${total.toStringAsFixed(2).replaceAllMapped(reg, mathFunc)} $userCurrencyCode",
                         alignment: TextAlign.end,
                         fontSize: 18.0,
                       )
@@ -1115,14 +1164,14 @@ class _RecipientSend extends State<RecipientSend> with RouteAware {
                     CrossAxisAlignment.start,
                     children: <Widget>[
                       MyText(
-                        "Total a recevoir(+ frais de retrait)",
+                        "Total à recevoir(+ frais de retrait)",
                         alignment:
                         TextAlign.start,
                         fontSize: 17.0,
                         color: Colors.grey,
                       ),
                       MyText(
-                        "${(double.parse((txtR.text.isEmpty) ? "0" : txtR.text.replaceAll(',', ''))+((CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(user.country).isoCode).currencyCode == "EUR") ? OM*655.0: OM*(convertedValue - ((convertedValue * 4) / 100)))).toStringAsFixed(2).replaceAllMapped(reg, mathFunc)} ${CurrencyPickerUtils.getCountryByIsoCode(CountryPickerUtils.getCountryByName(globalRecipient.country).isoCode).currencyCode}",
+                        "${(double.parse((txtR.text.isEmpty) ? "0" : txtR.text.replaceAll(',', '')) + OM*655.0).toStringAsFixed(2).replaceAllMapped(reg, mathFunc)} $recipientCurrencyCode",
                         alignment: TextAlign.end,
                         fontSize: 15.0,
                       )
@@ -1160,14 +1209,14 @@ class _RecipientSend extends State<RecipientSend> with RouteAware {
                         CountryPickerUtils.getCountryByName(user.country).isoCode)
                     .currencyCode ==
                 "EUR")
-            ? getOMSend(double.parse(_getToRateFee(0, 1).replaceAll(',', '')))
-            : getOMSend(double.parse(_getToRateFee(0, 4).replaceAll(',', '')));
+            ? getTransactionFees(double.parse(_getToRateFee(0, 1).replaceAll(',', '')))
+            : getTransactionFees(double.parse(_getToRateFee(0, 4).replaceAll(',', '')));
         _om = (CurrencyPickerUtils.getCountryByIsoCode(
                         CountryPickerUtils.getCountryByName(user.country).isoCode)
                     .currencyCode ==
                 "EUR")
-            ? getOMTaux(double.parse(_getToRateOm(0, 1).replaceAll(',', '')))
-            : getOMTaux(double.parse(_getToRateOm(0, 4).replaceAll(',', '')));
+            ? getOrangeMoneyFees(double.parse(_getToRateOm(0, 1).replaceAll(',', '')))
+            : getOrangeMoneyFees(double.parse(_getToRateOm(0, 4).replaceAll(',', '')));
 
         this.frais = (CurrencyPickerUtils.getCountryByIsoCode(
                         CountryPickerUtils.getCountryByName(user.country).isoCode)
@@ -1176,32 +1225,25 @@ class _RecipientSend extends State<RecipientSend> with RouteAware {
             ? double.parse(_getToRateFee(1, 1).replaceAll(',', ''))
             : double.parse(_getToRateFee(1, 4).replaceAll(',', ''));
         this.OM = (om)
-            ? ((CurrencyPickerUtils.getCountryByIsoCode(
-                            CountryPickerUtils.getCountryByName(user.country)
-                                .isoCode)
-                        .currencyCode ==
-                    "EUR")
+            ? ((userCurrencyCode == "EUR")
                 ? double.parse(_getToRateOm(1, 1).replaceAll(',', ''))
                 : double.parse(_getToRateOm(1, 4).replaceAll(',', '')))
             : 0.0;
-        _Om = (CurrencyPickerUtils.getCountryByIsoCode(
-                        CountryPickerUtils.getCountryByName(user.country).isoCode)
-                    .currencyCode ==
-                "EUR")
+        _Om = (userCurrencyCode ==  "EUR")
             ? double.parse(_getToRateOm(1, 1).replaceAll(',', ''))
             : double.parse(_getToRateOm(1, 4).replaceAll(',', ''));
       });
     } else {
       setState(() {
-        frais = getOMSend(double.parse(txtS.text.replaceAll(',', '')));
+        frais = getTransactionFees(double.parse(txtS.text.replaceAll(',', '')));
         OM =
-            (om) ? getOMTaux(double.parse(txtS.text.replaceAll(',', ''))) : 0.0;
-        _Om = getOMTaux(double.parse(txtS.text.replaceAll(',', '')));
+            (om) ? getOrangeMoneyFees(double.parse(txtR.text.replaceAll(',', ''))) : 0.0;
+        _Om = getOrangeMoneyFees(double.parse(txtR.text.replaceAll(',', '')));
       });
     }
   }
 
-  void showCustomBlueFlushBar(BuildContext context, String body){
+  void showSuccessFlushBar(BuildContext context, String body){
     Flushbar(
         message: body,
         icon: Icon(
@@ -1209,12 +1251,12 @@ class _RecipientSend extends State<RecipientSend> with RouteAware {
           color: white,
         ),
         backgroundColor: pointer,
-        duration: Duration(seconds: 5),
+        duration: Duration(seconds: 10),
         leftBarIndicatorColor: Colors.green[700]
     )..show(context);
   }
 
-  void showCustomFlushBar(BuildContext context, String body){
+  void showFailedFlushBar(BuildContext context, String body){
     Flushbar(
       message: body,
       icon: Icon(
@@ -1222,51 +1264,83 @@ class _RecipientSend extends State<RecipientSend> with RouteAware {
         color: white,
       ),
       backgroundColor: Colors.red,
-      duration: Duration(seconds: 5),
+      duration: Duration(seconds: 2),
       leftBarIndicatorColor: Colors.red[700],
     )..show(context);
   }
 
-  double getOMSend(double montant) {
-    if (montant != null && montant <= 757.80) {
-      if (montant >= 0 && montant <= 14.80) {
-        return 1.73;
-      }
-      if (montant >= 14.81 && montant <= 37.60) {
-        return 2.23;
-      }
-      if (montant >= 37.61 && montant <= 75.20) {
-        return 2.47;
-      }
-      if (montant >= 75.21 && montant <= 120.00) {
-        return 2.93;
-      }
-      if (montant >= 120.1 && montant <= 149.90) {
-        return 2.44;
-      }
-      if (montant >= 149.91 && montant <= 250.00) {
-        return 2.75;
-      }
-      if (montant >= 250.01 && montant <= 302.00) {
-        return 3.22;
-      }
-      if (montant >= 302.01 && montant <= 454.00) {
-        return 4.22;
-      }
-      if (montant >= 454.01 && montant <= 550.00) {
-        return 5.53;
-      }
-      if (montant >= 550.01 && montant <= 605.90) {
-        return 5.77;
-      }
-      if (montant >= 605.91) {
-        return 7.27;
-      }
-    } else {
-      double tmp = montant - 757.8;
-      return getOMSend(tmp) + 7.27;
-    }
+
+  double getTransactionFees(double montant) {
+    // TODO : get a better function
+    // if (montant != null && montant <= 757.80) {
+    //   if (montant >= 0 && montant <= 14.80) {
+    //     return 1.73;
+    //   }
+    //   if (montant >= 14.81 && montant <= 37.60) {
+    //     return 2.23;
+    //   }
+    //   if (montant >= 37.61 && montant <= 75.20) {
+    //     return 2.47;
+    //   }
+    //   if (montant >= 75.21 && montant <= 120.00) {
+    //     return 2.93;
+    //   }
+    //   if (montant >= 120.1 && montant <= 149.90) {
+    //     return 2.44;
+    //   }
+    //   if (montant >= 149.91 && montant <= 250.00) {
+    //     return 2.75;
+    //   }
+    //   if (montant >= 250.01 && montant <= 302.00) {
+    //     return 3.22;
+    //   }
+    //   if (montant >= 302.01 && montant <= 454.00) {
+    //     return 4.22;
+    //   }
+    //   if (montant >= 454.01 && montant <= 550.00) {
+    //     return 5.53;
+    //   }
+    //   if (montant >= 550.01 && montant <= 605.90) {
+    //     return 5.77;
+    //   }
+    //   if (montant >= 605.91) {
+    //     return 7.27;
+    //   }
+    // } else {
+    //   double tmp = montant - 757.8;
+    //   return getOMSend(tmp) + 7.27;
+    // }
     return 1.0;
+  }
+
+  double getOrangeMoneyFees(double price) {
+    var feeEdges = [6500, 10000,  13500,  25000,  50000,  80000,  100000, 200000, 300000, 400000, 500000];
+    var feeValues = [0,   180,    300,    350,    700,    1350,   1800,   2150,   2600,   3100,   3600];
+
+    var totalFee = 0.0;
+
+    if (price < 50) {
+      return 0.0;
+    }
+
+    for (var i = 0; i < feeEdges.length-1; i++) {
+      if (price <= feeEdges[i].toDouble()) {
+        if (i==0) {
+          totalFee = price * 0.03;
+        } else {
+          totalFee = feeValues[i].toDouble();
+        }
+        break;
+      }
+    }
+
+    if (totalFee == 0.0) {
+      double feeLimit = feeValues[feeValues.length-1].toDouble();
+      double feeEdgeLimit = feeEdges[feeEdges.length - 1].toDouble();
+      totalFee = feeLimit + getOrangeMoneyFees(price - feeEdgeLimit);
+    }
+
+    return totalFee/655.0; // Convert to EUROS
   }
 
   double getOMTaux(double montant) {
@@ -1395,5 +1469,49 @@ class _RecipientSend extends State<RecipientSend> with RouteAware {
     } else {
       return 0.0;
     }
+  }
+}
+
+transactionDoneDialog(BuildContext context) {
+  // set up the AlertDialog
+  AssetGiffyDialog alert = AssetGiffyDialog(
+    image: Image.asset(
+      'assets/my_awesome_image.gif',
+      fit: BoxFit.cover
+    ),
+    title: Text('Transaction enregistrée!',
+      style: TextStyle(
+          fontSize: 22.0, fontWeight: FontWeight.w600),
+    ),
+    description: Text('argent envoyé'),
+    entryAnimation: EntryAnimation.DEFAULT,
+    onlyOkButton: true,
+    buttonOkText: Text('Compris!'),
+    onOkButtonPressed: () {
+      Navigator.of(context).pop();
+    },
+  );
+  // show the dialog
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return alert;
+    },
+  );
+}
+
+void launchWhatsApp({@required String message}) async {
+  String url() {
+    if (Platform.isIOS) {
+      return "whatsapp://wa.me/?text=${Uri.parse(message)}";
+    } else {
+      return "whatsapp://send?text=$message";
+    }
+  }
+  print(url());
+  if (await canLaunch(url())) {
+    await launch(url());
+  } else {
+    throw 'Could not launch ${url()}';
   }
 }

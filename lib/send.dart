@@ -21,7 +21,6 @@ class _Send extends State<Send>{
 
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
     return new Scaffold(
       appBar: new AppBar(
         title: new Text("Confirmez vos informations d'envoie"),
@@ -47,7 +46,7 @@ class _Send extends State<Send>{
                   this._currentStep=this._currentStep+1;
                 }
                 else{
-                  DatabaseService().addTransaction(user.uid, globalRecipient.documentId, amountSend, receivedAmount, tansfertFee, totalAmount,"Enregistrer");
+                  DatabaseService().addTransaction(user.uid, globalRecipient.documentId, amountSend, receivedAmount, tansfertFee, totalAmount, "Enregistré");
                   Navigator.push(context, new MaterialPageRoute(builder: (BuildContext context){
                     return new Home(user.uid);
                   }));

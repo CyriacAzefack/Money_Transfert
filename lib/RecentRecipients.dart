@@ -32,22 +32,20 @@ class _RecentRecipient extends State<RecentRecipient>{
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     // ignore: unnecessary_statements
-    (user!=null) ? setupSub() : null;
+    (user!=null && this.mounted) ? setupSub() : null;
   }
 
   @override
   void dispose() {
-    // TODO: implement dispose
     sub.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
+
     return Scaffold(
         backgroundColor: Colors.white.withOpacity(0.9),
         key: scaffoldKey,

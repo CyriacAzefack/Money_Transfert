@@ -28,7 +28,6 @@ class _SignUp extends State<SignUp> with RouteAware{
   String _code='CMR';
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _getCurrency();
     _cmail=new TextEditingController();
@@ -49,7 +48,6 @@ class _SignUp extends State<SignUp> with RouteAware{
 
   @override
   void dispose() {
-    // TODO: implement dispose
     routeObserver.unsubscribe(this);
     _cmail.dispose();
     _cname.dispose();
@@ -79,7 +77,6 @@ class _SignUp extends State<SignUp> with RouteAware{
 
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
     return new Scaffold(
         body: Container(
           width: MediaQuery.of(context).size.width,

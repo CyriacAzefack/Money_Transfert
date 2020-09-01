@@ -27,7 +27,7 @@ class _ExitConfirmationDialogState extends State<ExitConfirmationDialog> {
 
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
+
     return Dialog(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(5.0),

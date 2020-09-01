@@ -21,7 +21,6 @@ class _Login extends State<Login>{
   bool obscure=true;
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _cmail=new TextEditingController();
     _cpwd=new TextEditingController();
@@ -29,7 +28,6 @@ class _Login extends State<Login>{
 
   @override
   void dispose() {
-    // TODO: implement dispose
     _cmail.dispose();
     _cpwd.dispose();
     super.dispose();
@@ -37,8 +35,6 @@ class _Login extends State<Login>{
 
   @override
   Widget build(BuildContext context) {
-
-    // TODO: implement build
     return new Scaffold(
         body: Container(
           width: MediaQuery.of(context).size.width,
